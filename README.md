@@ -1,6 +1,11 @@
-Data Science RAG Assistant
+Daisy - An Data Science RAG Assistant
 
 A personalized Retrieval-Augmented Generation (RAG) chatbot for data science learning materials.
+
+Demo
+![image](https://github.com/user-attachments/assets/74b961c0-eb1f-426a-bffe-49c95da5d28d)
+
+
 Overview
 
 This project creates a chatbot that can answer questions based on your personal collection of data science learning materials, including:
@@ -23,6 +28,7 @@ Prerequisites
 
     Python 3.8+
     An OpenAI API key or Hugging Face account for embedding models
+    For this repo Groq API is used for the deepseek-r1-distill-llama-70b model
 
 Installation
 
@@ -49,20 +55,25 @@ Usage
 Project Structure
 
 data-science-rag/
-├── data/                      # Your learning materials
-│   ├── statistics/
+├── data/                      # learning materials
+│   ├── data_science
+│   ├── linear_algebra
+│   ├── machine_learning
+│   ├── personal_notes
 │   ├── python/
 │   ├── r/
-│   └── machine_learning/
+│   └── sql/
+│   ├── statistics/
 ├── vector_db/                 # The generated vector database
 ├── scripts/                   # Utility scripts
-│   ├── index_documents.py     # Process and index documents
-│   └── run_chatbot.py         # Interactive chatbot interface
-├── src/                       # Core code
+│   └── rag_ui.py              # Interactive chatbot interface with streamlit
+├── notebooks/                 # Pipeline for trying src code and evalute model
+├── src/                       
 │   ├── __init__.py
 │   ├── document_processor.py  # Document loading and chunking
-│   ├── embedding.py           # Embedding models
+│   ├── math_render.py         # Renders math equation for Latex
 │   ├── rag_engine.py          # RAG implementation
+|   ├── token_manager.py       # Token limit manager
 │   └── utils.py               # Utility functions
 ├── config.yml                 # Configuration file
 ├── requirements.txt           # Dependencies
@@ -72,12 +83,9 @@ Configuration
 
 Edit config.yml to customize:
 
-    Embedding model (OpenAI or Hugging Face)
     Document processing settings
     LLM parameters
     Retrieval settings
 
-License
 
-MIT
 # daisy-rag-chatbot
