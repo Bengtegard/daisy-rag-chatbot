@@ -1,12 +1,12 @@
-Daisy - An Data Science RAG Assistant
+# Daisy - An Data Science RAG Assistant
 
 A personalized Retrieval-Augmented Generation (RAG) chatbot for data science learning materials.
 
-Demo
+## Demo
 ![image](https://github.com/user-attachments/assets/74b961c0-eb1f-426a-bffe-49c95da5d28d)
 
 
-Overview
+## Overview
 
 This project creates a chatbot that can answer questions based on your personal collection of data science learning materials, including:
 
@@ -86,6 +86,3 @@ Edit config.yml to customize:
     Document processing settings
     LLM parameters
     Retrieval settings
-
-
-# daisy-rag-chatbot
