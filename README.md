@@ -4,6 +4,8 @@ A personalized Retrieval-Augmented Generation (RAG) chatbot for data science lea
 
 ## Demo
 ![image](https://github.com/user-attachments/assets/c7f808b2-2ed6-4a78-8b30-cf00c769f695)
+
+### Example output when asking about the regulization technique "dropout"
 ![image](https://github.com/user-attachments/assets/74b961c0-eb1f-426a-bffe-49c95da5d28d)
 
 
