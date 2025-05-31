@@ -54,30 +54,30 @@ Usage
 
 Project Structure
 
-data-science-rag/
-├── data/                      # learning materials
-│   ├── data_science
-│   ├── linear_algebra
-│   ├── machine_learning
-│   ├── personal_notes
-│   ├── python/
-│   ├── r/
-│   └── sql/
-│   ├── statistics/
-├── vector_db/                 # The generated vector database
-├── scripts/                   # Utility scripts
-│   └── rag_ui.py              # Interactive chatbot interface with streamlit
-├── notebooks/                 # Pipeline for trying src code and evalute model
-├── src/                       
-│   ├── __init__.py
-│   ├── document_processor.py  # Document loading and chunking
-│   ├── math_render.py         # Renders math equation for Latex
-│   ├── rag_engine.py          # RAG implementation
-|   ├── token_manager.py       # Token limit manager
-│   └── utils.py               # Utility functions
-├── config.yml                 # Configuration file
-├── requirements.txt           # Dependencies
-└── README.md                  # Project documentation
+    data-science-rag/
+    ├── data/                      # learning materials
+    │   ├── data_science
+    │   ├── linear_algebra
+    │   ├── machine_learning
+    │   ├── personal_notes
+    │   ├── python/
+    │   ├── r/
+    │   └── sql/
+    │   ├── statistics/
+    ├── vector_db/                 # The generated vector database
+    ├── scripts/                   # Utility scripts
+    │   └── rag_ui.py              # Interactive chatbot interface with streamlit
+    ├── notebooks/                 # Pipeline for trying src code and evalute model
+    ├── src/                       
+    │   ├── __init__.py
+    │   ├── document_processor.py  # Document loading and chunking
+    │   ├── math_render.py         # Renders math equation for Latex
+    │   ├── rag_engine.py          # RAG implementation
+    |   ├── token_manager.py       # Token limit manager
+    │   └── utils.py               # Utility functions
+    ├── config.yml                 # Configuration file
+    ├── requirements.txt           # Dependencies
+    └── README.md                  # Project documentation
 
 Configuration
 
