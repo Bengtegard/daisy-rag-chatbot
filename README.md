@@ -77,7 +77,7 @@ Project Structure
     ├── src/                       
     │   ├── __init__.py
     │   ├── document_processor.py  # Document loading and chunking
-    │   ├── math_render.py         # Renders math equation for Latex
+    │   ├── math_render.py         # Renders math equation to LateX
     │   ├── rag_engine.py          # RAG implementation
     |   ├── token_manager.py       # Token limit manager
     │   └── utils.py               # Utility functions
