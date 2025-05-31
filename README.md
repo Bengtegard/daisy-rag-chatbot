@@ -47,13 +47,16 @@ Installation
 Usage
 
     Add your learning materials to the data/ directory
-    Run the indexing script:
 
-    python scripts/index_documents.py
+    Run the document_processor.py
+    
+    Create the FAISS vector database
 
-    Start the chatbot:
+    Start the streamlit app:
 
-    python scripts/run_chatbot.py
+    streamlit run scripts/rag_ui.py
+
+    The notebook shows a detailed step by step pipeline to get started.
 
 Project Structure
 
