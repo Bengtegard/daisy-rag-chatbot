@@ -6,6 +6,7 @@ langchain_huggingface
 transformers
 token_limit
 torch
+streamlit
 faiss_cpu
 langchain_text_splitters
 unstructured
