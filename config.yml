@@ -1,0 +1,21 @@
+# LLM settings
+llm:
+  model: 'deepseek-r1-distill-llama-70b'  # Groq model
+  temperature: 0.6
+
+# Document processing  
+documents:
+  chunk_size: 1000
+  chunk_overlap: 200
+  supported_extensions:
+    - .pdf
+    - .txt
+    - .csv
+    - .ipynb
+    - .R
+    - .py
+    - .md
+
+# Retrieval settings
+retrieval:
+  k: 8

@@ -1,0 +1,161 @@
+---
+title: R for Data Science
+subtitle: Transform
+output: pdf_document
+---
+
+# Chapter 12 - Logical vectors
+
+Logical vectors are the simplest type of vector because each element can only be one of three possible values: TRUE, FALSE, and NA. It’s relatively rare to find logical vectors in your raw data, but you’ll create and manipulate them in the course of almost every analysis.
+
+
+## 12.2.1 Floating point comparison
+
+Beware of using == with numbers. For example, it looks like this vector contains the numbers 1 and 2. But if you test them for equality, you get FALSE:
+
+```{r}
+x <- c(1 / 49 * 49, sqrt(2)^2)
+x
+x == 1
+```
+
+Computers store numbers with a fixed number of decimal places so there’s no way to exactly represent 1/49 or sqrt(2) and subsequent computations will be very slightly off. We can see the exact values by calling print() with the digits1 argument:
+
+```{r}
+print(x, digits = 16)
+```
+
+
+## 12.2.2 Missing values
+
+Missing values represent the unknown so they are “contagious”: almost any operation involving an unknown value will also be unknown:
+
+```{r}
+# We don't know how old Mary is
+age_mary <- NA
+
+# We don't know how old John is
+age_john <- NA
+
+# Are Mary and John the same age?
+age_mary == age_john
+#> [1] NA
+# We don't know!
+```
+
+## 12.2.3 is.na()
+
+is.na(x) works with any type of vector and returns TRUE for missing values and FALSE for everything else:
+
+```{r}
+is.na(c(TRUE, NA, FALSE))
+#> [1] FALSE  TRUE FALSE
+is.na(c(1, NA, 3))
+#> [1] FALSE  TRUE FALSE
+is.na(c("a", NA, "b"))
+#> [1] FALSE  TRUE FALSE
+```
+
+is.na() can also be useful in arrange(). arrange() usually puts all the missing values at the end but you can override this default by first sorting by is.na():
+
+```{r}
+flights |>
+    filter(month == 1, day == 1) |>
+    arrange(desc(is.na(dep_time)), dep_time)
+```
+
+## 12.3 Boolean algebra
+
+Once you have multiple logical vectors, you can combine them together using Boolean algebra. In R, & is “and”, | is “or”, ! is “not”, and xor() is exclusive or2. For example, df |> filter(!is.na(x)) finds all rows where x is not missing and df |> filter(x < -10 | x > 0) finds all rows where x is smaller than -10 or bigger than 0. Figure 12.1 shows the complete set of Boolean operations and how they work.
+
+![The complete set of Boolean operations](/home/bengtegard/src/02_school_ec/06_r/ds24_r/R_for_data_science/boolean_algebra.png)
+
+
+## 12.3.3 %in%
+
+An easy way to avoid the problem of getting your ==s and |s in the right order is to use %in%. x %in% y returns a logical vector the same length as x that is TRUE whenever a value in x is anywhere in y .
+
+So to find all flights in November and December we could write:
+
+```{r}
+flights |>
+    filter(month %in% c(11, 12))
+```
+
+## 12.3.4 Exercises
+
+*1. Find all flights where arr_delay is missing but dep_delay is not. Find all flights where neither arr_time nor sched_arr_time are missing, but arr_delay is.*
+
+
+*2. How many flights have a missing dep_time? What other variables are missing in these rows? What might these rows represent?*
+
+
+*3. Assuming that a missing dep_time implies that a flight is cancelled, look at the number of cancelled flights per day. Is there a pattern? Is there a connection between the proportion of cancelled flights and the average delay of non-cancelled flights?*
+
+
+## 12.4.1 Logical summaries
+
+There are two main logical summaries: any() and all(). any(x) is the equivalent of |; it’ll return TRUE if there are any TRUE’s in x. all(x) is equivalent of &; it’ll return TRUE only if all values of x are TRUE’s. Like all summary functions, they’ll return NA if there are any missing values present, and as usual you can make the missing values go away with na.rm = TRUE.
+
+## 12.4.2 Numeric summaries of logical vectors
+
+When you use a logical vector in a numeric context, TRUE becomes 1 and FALSE becomes 0. This makes sum() and mean() very useful with logical vectors because sum(x) gives the number of TRUEs and mean(x) gives the proportion of TRUEs (because mean() is just sum() divided by length()).
+
+```{r}
+flights |>
+    group_by(year, month, day) |>
+    summarize(
+        proportion_delayed = mean(dep_delay <= 60, na.rm = TRUE),
+        count_long_delay = sum(arr_delay >= 300, na.rm = TRUE),
+        .groups = "drop"
+    )
+```
+
+## 12.5.1 if_else()
+
+If you want to use one value when a condition is TRUE and another value when it’s FALSE, you can use dplyr::if_else()4. You’ll always use the first three argument of if_else(). The first argument, condition, is a logical vector, the second, true, gives the output when the condition is true, and the third, false, gives the output if the condition is false.
+
+```{r}
+x <- c(-3:3, NA)
+if_else(x > 0, "+ve", "-ve")
+```
+
+## 12.5.2 case_when()
+
+dplyr’s case_when() is inspired by SQL’s CASE statement and provides a flexible way of performing different computations for different conditions.
+
+```{r}
+x <- c(-3:3, NA)
+case_when(
+    x == 0 ~ "0",
+    x < 0 ~ "-ve",
+    x > 0 ~ "+ve",
+    is.na(x) ~ "???"
+)
+```
+
+## 12.5.4 Exercises
+
+*1. A number is even if it’s divisible by two, which in R you can find out with x %% 2 == 0. Use this fact and if_else() to determine whether each number between 0 and 20 is even or odd.*
+
+```{r}
+numbers <- c(1:20)
+if_else(numbers %% 2 == 0, "even", "odd")
+```
+
+*2. Given a vector of days like x <- c("Monday", "Saturday", "Wednesday"), use an if_else() statement to label them as weekends or weekdays.*
+
+```{r}
+x <- c("Monday", "Saturday", "Tuesday", "Thursday", "Sunday", "Friday")
+if_else(x == "Saturday" | x == "Sunday", "weekends", "weekdays")
+```
+
+*3. Use if_else() to compute the absolute value of a numeric vector called x.*
+
+```{r}
+x <- c(-2:6)
+if_else(x < 0, -x, x)
+```
+
+# Chapter 13 - numbers
+

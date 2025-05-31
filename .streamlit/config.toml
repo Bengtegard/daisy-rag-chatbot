@@ -1,0 +1,19 @@
+[theme]
+# Claude-inspired Streamlit theme configuration
+
+# Primary colors inspired by Claude's interface
+primaryColor = "#1B9E77"              # Claude's signature orange
+backgroundColor = "#D36A3F"           
+secondaryBackgroundColor = "#1F2937"  
+
+# Text colors
+textColor = "#FFFFFA"               # Warm white
+
+# Additional styling options
+font = "monospace"                   # Clean, modern font
+
+#C17B3A
+
+#FF7A00
+
+#1B9E77

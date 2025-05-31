@@ -1,0 +1,1305 @@
+---
+title: R for Data Science
+subtitle: Whole Game
+output: pdf_document
+---
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+library(ggthemes)
+library(ggplot2)
+library(httpgd)
+```
+
+
+# Whole Game
+
+# Chapter 1 - Data visualization
+
+```{r}
+plot <- ggplot(
+  data = penguins,
+  mapping = aes(x = flipper_length_mm, y = body_mass_g)
+) +
+  geom_point(mapping = aes(color = species, shape = species)) +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Body mass and flipper length",
+    subtitle = "Dimensions for Adelie, Chinstrap, and Gentoo Penguins",
+    x = "Flipper length (mm)", y = "Body mass (g)",
+    color = "Species", shape = "Species"
+  ) +
+  scale_color_colorblind()
+
+plot(plot)
+```
+
+ **1.2.5 Exercises**
+
+ *1. How many rows are in penguins? How many columns?*
+```{r}
+num_rows <- nrow(penguins)
+num_cols <- ncol(penguins)
+
+print(paste("Number of rows:", num_rows))
+print(paste("Number of columns:", num_cols))
+```
+
+ *2. What does the bill_depth_mm variable in the penguins data frame describe? Read the help for ?penguins to find out.*
+
+```{r}
+?penguins
+
+cat("The variable bill_depth_mm: a number denoting bill depth(millimeters)")
+```
+
+*3. Make a scatterplot of bill_depth_mm vs. bill_length_mm. That is, make a scatterplot with bill_depth_mm on the y-axis and bill_length_mm on the x-axis. Describe the relationship between these two variables.*
+
+```{r}
+scatterplot <- ggplot(
+  data = penguins,
+  mapping = aes(x = bill_length_mm, y = bill_depth_mm)
+) +
+  geom_point(mapping = aes(color = species, shape = species)) +
+  geom_smooth(method = "lm") +
+  scale_color_colorblind()
+
+plot(scatterplot)
+```
+
+If we look at each separate species we can detect a positive linear relationship. However, if we only look at the two variables without this added information the data points is more scattered and the relationship is becomes much harder to see, and even shows a negative linear relationship.
+
+*4. What happens if you make a scatterplot of species vs. bill_depth_mm? What might be a better choice of geom?*
+
+```{r}
+scatterplot <- ggplot(data = penguins, aes(x = species, y = bill_depth_mm)) +
+  geom_point()
+
+boxplot <- ggplot(data = penguins, aes(x = species, y = bill_depth_mm)) +
+  geom_boxplot()
+
+violinplot <- ggplot(data = penguins, aes(x = species, y = bill_depth_mm)) +
+  geom_violin()
+
+
+plot(scatterplot)
+plot(boxplot)
+plot(violinplot)
+```
+
+If you try to make a scatterplot of species vs. bill_depth_mm, you’ll get a discrete vs. continuous plot. Since species is a categorical variable (factor) and bill_depth_mm is numerical, a standard scatterplot (geom_point()) may not be the best choice because the points will overlap significantly. A boxplot is then a better choice of geom. A boxplot shows the distribution of bill_depth_mm for each species, making it easier to compare their spread and medians.
+
+**Best Choice?**
+
+    If you want summary statistics → Boxplot
+
+    If you want to see the data distribution → Violin plot
+
+    If you want to show individual points → Jitter plot
+
+
+*8. Recreate visualization*
+
+```{r}
+recreate_plot <- ggplot(
+  data = penguins,
+  mapping = aes(x = flipper_length_mm, y = body_mass_g)
+) +
+  geom_point(mapping = aes(color = bill_depth_mm)) +
+  geom_smooth()
+
+plot(recreate_plot)
+```
+
+
+```{r}
+ggplot(
+  data = penguins,
+  mapping = aes(x = flipper_length_mm, y = body_mass_g, color = island)
+) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+```
+
+geom_smooth(se = FALSE) → Adds a smoothed regression line but removes the confidence interval shading.
+
+
+```{r}
+ggplot(
+  data = penguins,
+  mapping = aes(x = flipper_length_mm, y = body_mass_g)
+) +
+  geom_point() +
+  geom_smooth()
+
+ggplot() +
+  geom_point(
+    data = penguins,
+    mapping = aes(x = flipper_length_mm, y = body_mass_g)
+  ) +
+  geom_smooth(
+    data = penguins,
+    mapping = aes(x = flipper_length_mm, y = body_mass_g)
+  )
+```
+
+In the first plot, you define data = penguins and mapping = aes(...) at the ggplot() level. This applies to all layers (both geom_point() and geom_smooth()).
+
+In the second plot, you specify data = penguins and mapping = aes(...) inside each geom separately. Since both layers are using the same data and mappings, the plot remains identical.
+
+If different layers need different data sources or different aesthetic mappings, the second approach allows for more flexibility.
+
+For example, if you wanted to plot a trend line for only one species while showing points for all species:
+
+```{r}
+ggplot() +
+  geom_point(
+    data = penguins,
+    mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)
+  ) +
+  geom_smooth(
+    data = filter(penguins, species == "Adelie"),
+    mapping = aes(x = flipper_length_mm, y = body_mass_g)
+  )
+```
+
+
+
+```{r}
+# appending an empty vector
+time1 <- system.time({
+  my_results <- c()
+
+  for (i in 1:100000) {
+    result <- i^2
+    my_results <- c(my_results, result)
+  }
+})
+
+# replacing elements in a pre allocated vector
+time2 <- system.time({
+  my_storage <- integer(100000)
+
+  for (i in 1:100000) {
+    result <- i^2
+    my_storage[i] <- result
+  }
+})
+
+time3 <- system.time({
+  my_storage <- (1:100000)^2 # vectorize the operation
+})
+
+print(time1)
+print(time2)
+print(time3)
+```
+
+Your code compares two different approaches for storing squared values of numbers from 1 to 100,000 in R and measures their execution time using system.time().
+Why is time2 faster than time1?
+
+    Inefficient Growth of Vectors (time1)
+        In time1, you are growing a vector (my_results) inside a loop using c(my_results, result).
+        This is inefficient because R has to allocate new memory every time you add a new element.
+        Memory allocation is costly, leading to slower performance.
+
+    Pre-allocated Vector (time2)
+        In time2, you pre-allocate an integer vector (my_storage) of length 100,000.
+        Instead of growing the vector dynamically, you replace elements in an existing vector, which is much faster.
+        This avoids repeated memory reallocation, making the loop much more efficient.
+
+Expected Results
+
+You should see that time2 runs significantly faster than time1.
+
+
+### Visualizing distributions
+How you visualize the distribution of a variable depends on the type of variable: categorical or numerical.
+
+**Categorical variables:**
+
+A variable is categorical if it can only take one of a small set of values. To examine the distribution of a categorical variable, you can use a bar chart. The height of the bars displays how many observations occurred with each x value.
+
+```{r}
+ggplot(
+  data = penguins,
+  mapping = aes(x = fct_infreq(species))
+) +
+  geom_bar()
+```
+
+**Numerical variables:**
+A variable is numerical (or quantitative) if it can take on a wide range of numerical values, and it is sensible to add, subtract, or take averages with those values. Numerical variables can be continuous or discrete.
+
+One commonly used visualization for distributions of continuous variables is a histogram.
+
+```{r}
+ggplot(
+  data = penguins,
+  mapping = aes(x = body_mass_g)
+) +
+  geom_histogram(binwidth = 200)
+```
+
+An alternative visualization for distributions of numerical variables is a density plot. A density plot is a smoothed-out version of a histogram and a practical alternative, particularly for continuous data that comes from an underlying smooth distribution. We won’t go into how geom_density() estimates the density (you can read more about that in the function documentation), but let’s explain how the density curve is drawn with an analogy. Imagine a histogram made out of wooden blocks. Then, imagine that you drop a cooked spaghetti string over it. The shape the spaghetti will take draped over blocks can be thought of as the shape of the density curve. It shows fewer details than a histogram but can make it easier to quickly glean the shape of the distribution, particularly with respect to modes and skewness.
+
+```{r}
+ggplot(
+  data = penguins,
+  mapping = aes(x = body_mass_g)
+) +
+  geom_density()
+```
+
+**1.4.3 Exercises**
+
+*1. Make a bar plot of species of penguins, where you assign species to the y aesthetic. How is this plot different?*
+
+Answer: It becomes a horizontal barplot. 
+
+```{r}
+ggplot(
+  data = penguins,
+  mapping = aes(y = fct_infreq(species))
+) +
+  geom_bar()
+```
+
+```{r}
+ggplot(penguins, aes(x = species)) +
+  geom_bar(fill = "red")
+```
+
+ Which aesthetic, color or fill, is more useful for changing the color of bars? Fill!
+
+ *3. What does the bins argument in geom_histogram() do?*
+   
+
+A histogram divides the x-axis into equally spaced bins and then uses the height of a bar to display the number of observations that fall in each bin. In the graph above, the tallest bar shows that 39 observations have a body_mass_g value between 3,500 and 3,700 grams, which are the left and right edges of the bar.
+
+You can set the width of the intervals in a histogram with the binwidth argument, which is measured in the units of the x variable. You should always explore a variety of binwidths when working with histograms, as different binwidths can reveal different patterns. In the plots below a binwidth of 20 is too narrow, resulting in too many bars, making it difficult to determine the shape of the distribution. Similarly, a binwidth of 2,000 is too high, resulting in all data being binned into only three bars, and also making it difficult to determine the shape of the distribution. A binwidth of 200 provides a sensible balance.
+
+*4. Make a histogram of the carat variable in the diamonds dataset that is available when you load the tidyverse package. Experiment with different binwidths. What binwidth reveals the most interesting patterns?*
+
+```{r}
+library(gridExtra)
+
+hist_one <- ggplot(diamonds, aes(x = carat)) +
+  geom_histogram(binwidth = 0.1, fill = "coral") +
+  labs(title = "Histogram with binwidth = 0.1")
+
+hist_two <- ggplot(diamonds, aes(x = carat)) +
+  geom_histogram(binwidth = 0.5, fill = "darkgreen") +
+  labs(title = "Histogram with binwidth = 0.5")
+
+hist_three <- ggplot(diamonds, aes(x = carat)) +
+  geom_histogram(binwidth = 1, fill = "blue") +
+  labs(title = "Histogram with binwidth = 1")
+
+hist_four <- ggplot(diamonds, aes(x = carat)) +
+  geom_histogram(binwidth = 5, fill = "blue") +
+  labs(title = "Histogram with binwidth = 1")
+
+grid.arrange(hist_one, hist_two, hist_three, hist_four, nrow = 2, ncol = 2)
+```
+
+![Diagram depicting how a boxplot is created.](/home/bengtegard/src/02_school_ec/06_r/ds24_r/R_for_data_science/boxplot.png)
+
+## Visualizing relationships
+
+```{r}
+ggplot(penguins, aes(x = species, y = body_mass_g)) +
+  geom_boxplot()
+```
+
+
+In this example we map species to both color and fill aesthetics.
+```{r}
+ggplot(penguins, aes(x = body_mass_g, color = species, fill = species)) +
+  geom_density(alpha = 0.5)
+```
+
+Note the terminology we have used here:
+
+    We map variables to aesthetics if we want the visual attribute represented by that aesthetic to vary based on the values of that variable.
+    Otherwise, we set the value of an aesthetic.
+
+**Categorical variables**
+
+The plot below shows a relative frequency plot created by setting position = "fill" in the geom, is more useful for comparing species distributions across islands since it’s not affected by the unequal numbers of penguins across the islands. Using this plot we can see that Gentoo penguins all live on Biscoe island and make up roughly 75% of the penguins on that island, Chinstrap all live on Dream island and make up roughly 50% of the penguins on that island, and Adelie live on all three islands and make up all of the penguins on Torgersen.
+
+```{r}
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(position = "fill")
+```
+
+
+**Numerical variables**
+
+A scatterplot is probably the most commonly used plot for visualizing the relationship between two numerical variables.
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point()
+```
+
+Adding too many aesthetic mappings to a plot makes it cluttered and difficult to make sense of. Another way, which is particularly useful for categorical variables, is to split your plot into facets, subplots that each display one subset of the data.
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = species, shape = species)) +
+  facet_wrap(~island)
+```
+
+**1.5.5 Exercises**
+
+
+*1. The mpg data frame that is bundled with the ggplot2 package contains 234 observations collected by the US Environmental Protection Agency on 38 car models. Which variables in mpg are categorical? Which variables are numerical? (Hint: Type ?mpg to read the documentation for the dataset.) How can you see this information when you run mpg?*
+
+
+```{r}
+sum_variable_types <- function(df) {
+  result <- sapply(df, function(x) {
+    if (is.numeric(x)) {
+      return("Numeric")
+    } else if (is.factor(x) || is.character(x)) {
+      return("Categorical")
+    } else {
+      return("Other")
+    }
+  })
+  return(as.data.frame(result))
+}
+
+sum_variable_types(mpg)
+```
+
+*2. Make a scatterplot of hwy vs. displ using the mpg data frame. Next, map a third, numerical variable to color, then size, then both color and size, then shape. How do these aesthetics behave differently for categorical vs. numerical variables?*
+
+```{r}
+ggplot(mpg, aes(x = hwy, y = displ, size = cty, color = cty)) +
+  geom_point()
+```
+
+```{r}
+ggplot(mpg, aes(x = manufacturer, y = model, color = drv, shape = drv)) +
+  geom_point()
+```
+
+Color works well for both numerical and categorical variables (gradient for numbers, discrete colors for categories).
+
+Size is best for numerical variables (continuous scaling).
+
+Shape is only useful for categorical variables, since shapes are discrete.
+
+
+*3. In the scatterplot of hwy vs. displ, what happens if you map a third variable to linewidth?*
+
+```{r}
+ggplot(mpg, aes(x = hwy, y = displ, color = cty, linewidth = year)) +
+  geom_point()
+```
+
+Nothing happens because linewidth is an aesthetic primarly for lines, not points.
+
+*4. Make a scatterplot of bill_depth_mm vs. bill_length_mm and color the points by species. What does adding coloring by species reveal about the relationship between these two variables? What about faceting by species?*
+
+```{r}
+ggplot(penguins, aes(x = bill_depth_mm, y = bill_length_mm, color = species)) +
+  geom_point()
+```
+
+When mapping the aesthetic color to species we see that it makes three clusters of each species. 
+
+```{r}
+ggplot(penguins, aes(x = bill_depth_mm, y = bill_length_mm, color = species)) +
+  geom_point() +
+  facet_wrap(~species)
+```
+
+# Chaper 3 - Data transformation
+
+```{r}
+library(nycflights13)
+glimpse(flights)
+```
+
+
+The primary dplyr verbs(functions) share these features:
+
+    The first argument is always a data frame.
+
+    The subsequent arguments typically describe which columns to operate on using the variable names (without quotes).
+
+    The output is always a new data frame.
+  
+Because each verb does one thing well, solving complex problems will usually require combining multiple verbs, and we’ll do so with the pipe, |>.
+
+ In brief, the pipe takes the thing on its left and passes it along to the function on its right so that x | > f(y) is equivalent to f(x, y), and x |> f(y) |> g(z) is equivalent to g(f(x, y), z). The easiest way to pronounce the pipe is “then”. That makes it possible to get a sense of the following code even though you haven’t yet learned the details: 
+
+```{r}
+flights |>
+  filter(dest == "IAH") |>
+  group_by(year, month, day) |>
+  summarize(
+    arr_delay = mean(arr_delay, na.rm = TRUE)
+  )
+```
+
+dplyr’s verbs are organized into four groups based on what they operate on: **rows**, **columns**, **groups**, or **tables**.
+
+
+### 3.2.1. filter()
+
+filter() allows you to keep rows based on the values of the columns1. The first argument is the data frame. The second and subsequent arguments are the conditions that must be true to keep the row. For example, we could find all flights that departed more than 120 minutes (two hours) late:
+
+```{r}
+flights |>
+  filter(dep_delay > 120)
+```
+
+As well as > (greater than), you can use >= (greater than or equal to), < (less than), <= (less than or equal to), == (equal to), and != (not equal to). You can also combine conditions with & or , to indicate “and” (check for both conditions) or with | to indicate “or” (check for either condition):
+
+```{r}
+# Flights departed on January 1
+flights |>
+  filter(month == 1 & day == 1)
+```
+There’s a useful shortcut when you’re combining | and ==: %in%. It keeps rows where the variable equals one of the values on the right:
+
+```{r}
+# Flights that departed in January or February
+flights |>
+  filter(month == 1 | month == 2)
+# A shorter way to select flights that departed in January or February
+flights |>
+  filter(month %in% c(1, 2))
+```
+
+When filter() runs dplyr executes the filtering operation as well as creates a new dataframe. It does not however modify the existing datast, because dply functions never modify their inputs. To save the result, you need to use the assignment operatio <-:
+
+```{r}
+jan1 <- flights |>
+  filter(month == 1 & day == 1)
+```
+
+### 3.2.3 arrange()
+arrange() changes the order of the rows based on the value of the columns. It takes a data frame and a set of column names (or more complicated expressions) to order by. If you provide more than one column name, each additional column will be used to break ties in the values of the preceding columns. For example, the following code sorts by the departure time, which is spread over four columns. We get the earliest years first, then within a year, the earliest months, etc.
+
+```{r}
+flights |>
+  arrange(year, month, day, dep_time)
+```
+If you want to re-order the data in descending order you can use the desc() function. Note that the number of rows never change, we're only arranging the data.
+
+
+### 3.2.4 distinct()
+distinct() finds all the unique rows in a dataset, so technically, it primarily operates on the rows. Most of the time, however, you’ll want the distinct combination of some variables, so you can also optionally supply column names:
+```{r}
+# Remove duplicate rows.
+flights |>
+  distinct()
+
+# Find all unique origin and destination pairs.
+flights |>
+  distinct(origin, dest)
+
+# keep all other columns when filtering for unique rows
+flights |>
+  distinct(origin, dest, .keep_all = TRUE)
+```
+
+If you want to find the number of occurences use the count() function instead. With the sort = TRUE argument, you can arrange them in descending order.
+```{r}
+flights |>
+  count(origin, dest, sort = TRUE)
+```
+
+## **3.2.5 Exercises**
+
+*1. In a single pipeline for each condition, find all flights that meet the condition:*
+
+    Had an arrival delay of two or more hours
+    Flew to Houston (IAH or HOU)
+    Were operated by United, American, or Delta
+    Departed in summer (July, August, and September)
+    Arrived more than two hours late but didn’t leave late
+    Were delayed by at least an hour, but made up over 30 minutes in flight
+
+```{r}
+# Had an arrival delay of two or more hours
+flights |>
+  filter(arr_delay >= 120) |>
+  nrow()
+
+# Flew to Houston (IAH or HOU)
+flights |>
+  filter(dest %in% c("IAH", "HOU")) |>
+  nrow()
+
+# Operated by United (UA), American (AA), or Delta (DL)
+flights |>
+  filter(carrier %in% c("UA", "AA", "DL")) |>
+  nrow()
+
+# Departed in summer (July, August, September)
+flights |>
+  filter(month %in% c(7, 8, 9)) |>
+  nrow()
+
+# Arrived more than two hours late but didn’t leave late
+flights |>
+  filter(arr_delay > 120, dep_delay == 0) |>
+  nrow()
+
+# Delayed by at least an hour but gained over 30 minutes in flight
+flights |>
+  filter(arr_delay >= 60 & (dep_delay - arr_delay) >= 30) |>
+  nrow()
+```
+
+*2. Sort flights to find the flights with the longest departure delays. Find the flights that left earliest in the morning.*
+
+```{r}
+# Top ten longest departure delays
+flights |>
+  arrange(desc(dep_delay)) |>
+  select(dep_delay)
+head(10)
+
+# Top ten earliest flights
+flights |>
+  arrange(dep_time) |>
+  select(year, month, day, dep_time, carrier, flight, origin, dest)
+head(10)
+```
+
+*3. Sort flights to find the fastest flights. (Hint: Try including a math calculation inside of your function.)*
+
+```{r}
+fastest_flights <- flights |>
+  mutate(speed = distance / (air_time / 60)) |> # calculate miles per hour
+  arrange(desc(speed)) |> # sort by highest speed first
+  select(year, month, day, dep_time, arr_time, carrier, flight, origin, dest, distance, air_time, speed) |>
+  head(10) # show top 10 fastest flights
+
+print(fastest_flights)
+```
+
+*4. Was there a flight on every day of 2013?*
+
+```{r}
+flights |>
+  distinct(year, month, day) |>
+  count() |>
+  as.numeric()
+```
+ Yes, there was a flight on every day of 2013, because using distinct() function, we find that there are 365 unique combinations of year , month , and day. 
+
+*5. Which flights traveled the farthest distance? Which traveled the least distance?*
+
+Top 5 flights by the farthest distance traveled
+```{r}
+library(gt)
+# farthest distance
+flights |>
+  arrange(desc(distance)) |>
+  select(origin, dest, distance, air_time, carrier) |>
+  # Distinct added to remove same flight (on different days) repeating in top 5
+  distinct(origin, dest, .keep_all = TRUE) |>
+  slice_head(n = 5) |>
+  gt()
+```
+
+The 5 flights with least distance traveled
+```{r}
+flights |>
+  arrange(distance) |>
+  select(origin, dest, distance, air_time, carrier) |>
+  # Distinct added to remove same flight (which runs
+  # on different days) repeating in top 5
+  distinct(origin, dest, .keep_all = TRUE) |>
+  slice_head(n = 5) |>
+  gt()
+```
+
+
+## **3.3 Columns**
+There are four important verbs that affect the columns without changing the rows: mutate() creates new columns that are derived from the existing columns, select() changes which columns are present, rename() changes the names of the columns, and relocate() changes the positions of the columns.
+
+### **3.3.1 mutate()**
+
+You can add new colums with mutate() that are calculated from the existins columns. For example, the basic algebraic equation for calculating speed in miles per hour or to compute the gain:
+
+```{r}
+flights |>
+  mutate(
+    gain = dep_delay - arr_delay,
+    speed = distance / air_time * 60,
+    .before = 1
+  )
+```
+
+```{r}
+flights |>
+  mutate(
+    gain = dep_delay - arr_delay,
+    hours = air_time / 60,
+    gain_per_hour = gain / hours,
+    .keep = "used" # only keep the columns used in mutate()
+  )
+```
+
+### 3.3.2 select()
+It’s not uncommon to get datasets with hundreds or even thousands of variables. In this situation, the first challenge is often just focusing on the variables you’re interested in. select() allows you to rapidly zoom in on a useful subset using operations based on the names of the variables:
+
+```{r}
+flights |>
+  select(year, month, day) # select by column names
+
+flights |>
+  select(year:day) # select all comuns between year and day (inclusive)
+
+flights |>
+  select(!year:day) # select all comuns except those from year and day
+```
+There are a number of helper functions you can use within select():
+
+    starts_with("abc"): matches names that begin with “abc”.
+    ends_with("xyz"): matches names that end with “xyz”.
+    contains("ijk"): matches names that contain “ijk”.
+    num_range("x", 1:3): matches x1, x2 and x3.
+  
+
+## 3.3.5 Exercises
+
+*1. Compare dep_time, sched_dep_time, and dep_delay. How would you expect those three numbers to be related?*
+  
+```{r}
+flights |>
+  select(dep_time, sched_dep_time, dep_delay)
+```
+
+*2. Brainstorm as many ways as possible to select dep_time, dep_delay, arr_time, and arr_delay from flights.*
+
+```{r}
+# dplyr methods
+flight_selected <- flights |>
+  select(dep_time, sched_dep_time, dep_delay)
+# dply::select() with ends_with()
+flights_selected <- flights %>%
+  select(ends_with("time"), ends_with("delay"))
+
+# base R methods
+flights_selected <- flights[, colnames(flights) %in% c("dep_time", "dep_delay", "arr_time", "arr_delay")]
+# subset
+flights_selected <- subset(flights, select = dep_time:arr_delay)
+# indexing with []
+flights_selected <- flights[, c("dep_time", "dep_delay", "arr_time", "arr_delay")]
+```
+
+*3. What does the any_of() function do? Why might it be helpful in conjunction with this vector?*
+
+It will only select columns that exist in the data frame. If some column names in the vector do not exist, it will ignore them without throwing an error.
+
+```{r}
+variables <- c("year", "month", "day", "dep_delay", "arr_delay")
+
+data_selected <- flights |>
+  select(any_of(variables))
+
+print(data_selected)
+```
+
+*4. Rename air_time to air_time_min to indicate units of measurement and move it to the beginning of the data frame.*
+
+```{r}
+flights |>
+  rename(air_time_min = air_time) |>
+  relocate(air_time_min, .before = 1)
+```
+
+
+*6. Does it matter what order you used filter() and arrange() if you’re using both? Why/why not? Think about the results and how much work the functions would have to do.*
+
+Although, in terms of output received, it does not matter in which order we use them, because when we run the function filter() it removes the rows not required, but leaves the arrangement-ordering the same, i.e. the remaining rows move up.
+
+However, using arrange() before filter() means R will have to arrange all the rows, and then we filter out only a few rows - thus meaning that more work will have to be done computationally.
+
+For computational efficiency, it would be better if we use filter() first, then run arrange() only on the subset of rows remaining.
+
+### 3.4 The pipe
+
+We’ve shown you simple examples of the pipe above, but its real power arises when you start to combine multiple verbs. For example, imagine that you wanted to find the fastest flights to Houston’s IAH airport: you need to combine filter(), mutate(), select(), and arrange():
+
+```{r}
+flights |>
+  filter(dest == "IAH") |>
+  mutate(speed = distance / air_time * 60) |>
+  select(year:day, dep_time, carrier, flight, speed) |>
+  arrange(desc(speed))
+```
+
+## 3.5 Groups
+
+### 3.5.1. group_by()
+
+So far you’ve learned about functions that work with rows and columns. dplyr gets even more powerful when you add in the ability to work with groups. In this section, we’ll focus on the most important functions: group_by(), summarize(), and the slice family of functions.
+
+```{r}
+flights |>
+  group_by(month)
+```
+Look at the output - Groups: month [12]. This means subsequent operations will now work "by month". 
+
+### 3.5.2 summarize()
+
+```{r}
+flights |>
+  group_by(month) |>
+  summarize(
+    avg_delay = mean(dep_delay, na.rm = TRUE), # ignore NaN values
+    n = n() # returns the number of rows in each group
+  )
+```
+
+### 3.5.3 The slice_ functions
+
+There are five handy functions that allow you to extract specific rows within each group:
+
+    df |> slice_head(n = 1) takes the first row from each group.
+    df |> slice_tail(n = 1) takes the last row in each group.
+    df |> slice_min(x, n = 1) takes the row with the smallest value of column x.
+    df |> slice_max(x, n = 1) takes the row with the largest value of column x.
+    df |> slice_sample(n = 1) takes one random row.
+
+### 3.5.6. .by
+dplyr 1.1.0 includes a new, experimental, syntax for per-operation grouping, the .by argument. group_by() and ungroup() aren’t going away, but you can now also use the .by argument to group within a single operation
+
+```{r}
+flights |>
+  summarize(
+    delay = mean(dep_delay, na.rm = TRUE),
+    n = n(),
+    .by = month
+  )
+```
+
+## 3.5.7 Exercises
+
+*1. Which carrier has the worst average delays?*
+```{r}
+flights |>
+  summarize(
+    delay = mean(dep_delay, na.rm = TRUE), # calculate average delays
+    n = n(),
+    .by = carrier # group by carrier
+  ) |>
+  arrange(desc(delay)) # descending order
+```
+
+*2. Find the flights that are most delayed upon departure from each destination.*
+```{r}
+flights |>
+  group_by(dest) |> # group by destination
+  slice_max(dep_delay, n = 1, with_ties = FALSE) |> # most delayed flight from each destination
+  arrange(desc(dep_delay)) |>
+  ungroup()
+```
+
+*3. How do delays vary over the course of the day? Illustrate your answer with a plot.*
+
+```{r}
+flights |>
+  group_by(sched_dep_time) |>
+  summarise(avg_delay = mean(dep_delay, na.rm = TRUE)) |>
+  mutate(
+    # Convert sched_dep_time to hours and minutes
+    hour = sched_dep_time %/% 100, # extract hour
+    minute = sched_dep_time %% 100 # extract minutes
+  ) |>
+  mutate(time_hr = hour + minute / 60) |>
+  ggplot(aes(x = time_hr, y = avg_delay)) +
+  geom_line() + # Line plot to show trend over time
+  geom_smooth(color = "red", se = FALSE) + # Smooth line to show overall trend
+  theme_bw() +
+  labs(
+    x = "Scheduled Departure Time (in Hours)", # Label for x-axis
+    y = "Average Delay (in Minutes)"
+  ) + # Label for y-axis
+  scale_x_continuous(breaks = seq(from = 0, to = 24, by = 4)) # Set breaks for every 4 hours
+```
+
+The purpose of mutate(hour = floor(dep_time / 100)) is to extract the hour (the HH part of HHMM) from the dep_time so that we can group the flights by hour and analyze how delays vary throughout the day.
+
+```{r}
+delays_per_day <- flights |>
+  summarize(
+    delay = mean(dep_delay, na.rm = TRUE), # calculate average delays
+    .by = day # group by day
+  )
+
+delay_plot <- ggplot(delays_per_day, aes(x = day, y = delay)) +
+  geom_line(linewidth = 2) +
+  labs(title = "Departue Delay of Each Day", y = "Average Delay (hours)", x = "Day")
+
+print(delay_plot)
+```
+
+*5. Explain what count() does in terms of the dplyr verbs you just learned. What does the sort argument to count() do?.*
+
+Instead of using the group_by() and summarize() verbs, the count() function can be used as a shortcut to quickly compute the number of unique values of each combination of a variable occurring in the data-set. Thus, count() helps us to calculate the number of values (rows) for each unique combination of variables which have been used as an argument in the count() function.
+
+The inbuilt help in R tells us that df %>% count(a, b) is roughly equivalent to df %>% group_by(a, b) %>% summarise(n = n()) .
+
+Further, the sort = TRUE argument in count() tells R to display the largest groups (by count, i.e., n) to be displayed at the top.
+
+
+```{r}
+flights |>
+  group_by(origin, dest) |>
+  summarise(n = n()) |>
+  arrange(desc(n)) |>
+  ungroup() |>
+  slice_head(n = 5)
+```
+
+This will give the same output as the simpler code below:
+
+```{r}
+flights |>
+  count(origin, dest, sort = TRUE) |>
+  slice_head(n = 5)
+```
+
+*6. Imagine what the output will be for each data frame*
+```{r}
+df <- tibble(
+  x = 1:5,
+  y = c("a", "b", "a", "a", "b"),
+  z = c("K", "K", "L", "L", "K")
+)
+df |>
+  arrange(y)
+
+df |>
+  group_by(y) |>
+  summarize(mean_x = mean(x))
+```
+
+The output should display the mean values of x for different values of y . For y = a , I expect mean_x = (1+3+4)/3 = 2.67 and for y = b , I expect mean_x = (2+5)/2 = 3.5 . I expect the output to be a 2 X 2 tibble with first column y and second column mean_x .
+
+```{r}
+df |>
+  group_by(y, z) |>
+  summarize(mean_x = mean(x)) # if .group="drop" it becomes an ungrouped tibble
+```
+
+Now, I expect R to form groups of various combinations of y and z , and then display average value of x for each combination. The output should be a tibble of 3 X 3, and still containing two groups of y .
+
+
+# Chapter 4 - Workflow: code style
+
+## 4.6. Exercises
+
+*1. Restyle the following piplies according to the tidyverse styleguide*
+Restyle with styler (ctr + s)
+
+```{r}
+flights |>
+  filter(dest == "IAH") |>
+  group_by(year, month, day) |>
+  summarize(
+    n = n(),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) |>
+  filter(n > 10)
+
+flights |>
+  filter(carrier == "UA", dest %in% c("IAH", "HOU"), sched_dep_time >
+    0900, sched_arr_time < 2000) |>
+  group_by(flight) |>
+  summarize(delay = mean(
+    arr_delay,
+    na.rm = TRUE
+  ), cancelled = sum(is.na(arr_delay)), n = n()) |>
+  filter(n > 10)
+```
+
+### My own styling
+
+flights |>
+  filter(dest == "IAH") |>
+  group_by(year, month, day) |>
+  summarize(
+    n == n(),
+    delay == mean(arr_delay, na.rm == TRUE)
+  ) |>
+  filter(n > 10)
+
+flights |>
+  filter(
+    carrier == "UA",
+    dest %in% c("IAH", "HOU"),
+    sched_dep_time > 0900, 
+    sched_arr_time < 2000 
+    ) |>
+    group_by(flight) |>
+    summarize(
+      delay == mean(arr_delay, na.rm == TRUE), 
+      cancelled == sum(is.na(arr_delay)),
+      n == n()
+    ) |>
+    filter(n > 10)
+
+# Chapter 5 - Data tidying
+
+There are three interrelated rules that make a dataset tidy:
+
+    Each variable is a column; each column is a variable.
+    Each observation is a row; each row is an observation.
+    Each value is a cell; each cell is a single value.
+
+![The following three rules make a dataset tidy: variables are columns, observations are rows, and values are cells. ](/home/bengtegard/src/02_school_ec/06_r/ds24_r/R_for_data_science/tidy_data.png)
+
+Pivot your data into a tidy form, with variables in the columns and observations in the rows.
+
+```{r}
+billboard
+billboard |>
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    values_to = "rank",
+    values_drop_na = TRUE # drop NaN values
+  )
+```
+
+The pivot_longer() takes three key arguments:
+
+    cols -> specifies which columns need to be pivoted, i.e. which columns aren’t variables. This argument uses the same syntax as select() so here we could use !c(artist, track, date.entered) or starts_with("wk").
+
+    names_to -> names the variable stored in the column names, we named that variable week.
+
+    values_to -> names the variable stored in the cell values, we named that variable rank.
+
+This data is now tidy, but we could make future computation a bit easier by converting values of week from character strings to numbers using mutate() and readr::parse_number(). parse_number() is a handy function that will extract the first number from a string, ignoring all other text.
+
+```{r}
+billboard_longer <- billboard |>
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    values_to = "rank",
+    values_drop_na = TRUE
+  ) |>
+  mutate(
+    week = parse_number(week)
+  )
+billboard_longer
+```
+
+## How does pivot_longer() work? 
+
+Lets demonstrate by creating a small data set. Suppose we have three patients with ids A, B, and C, and we take two blood pressure measurements on each patient
+
+```{r}
+df <- tribble(
+  ~id, ~bp1, ~bp2,
+  "A", 100, 120,
+  "B", 140, 115,
+  "C", 120, 125
+)
+```
+
+```{r}
+df |>
+  pivot_longer(
+    cols = bp1:bp2,
+    names_to = "measurement",
+    values_to = "value"
+  )
+```
+
+Columns that are already variables need to be repeated, once for each column that is pivoted:
+
+id | bp1 | bp2   -->   id   | measurement | value
+A  | 100 | 120       **A**  |    bp1  | 100
+                     **A**  |    bp2  | 120
+
+The column names (bp1, bp2) of pivoted columns become values in a new column (measurement). The values need to be repeated once for each row of the original dataset.:
+
+id | bp1 | bp2   --> id | measurement | value
+A  | 100 | 120       A  |   **bp1**   | 100
+                     A  |   **bp2**   | 120
+
+
+The number of values is preserved (not repeated), but unwound row-by-row:
+
+id | bp1 | bp1  -->  id | measurement | value
+A  | 100 | 120       A  |     bp1     | **100**
+                     A  |     bp2     | **120** 
+
+A more complicated scenario is when a column name contains many variables
+
+```{r}
+glimpse(who2)
+
+who2 |>
+  pivot_longer(
+    cols = !(country:year),
+    names_to = c("diagnosis", "gender", "age"),
+    names_sep = "_",
+    values_to = "count"
+  )
+```
+
+Pivoting columns with multiple pieces of information in the names means that each column name now fills in values in multiple output columns. :
+
+id | x_1 | y_2   --> id | name | number | value
+A  |  1  |  2        A  |  x   |   1    |  1
+                     A  |  y   |   2    |  2
+
+## How does pivot_wider() work?
+
+To understand how pivot_wider() works, let’s again start with a very simple dataset. This time we have two patients with ids A and B, we have three blood pressure measurements on patient A and two on patient B:
+
+```{r}
+df <- tribble(
+  ~id, ~measurement, ~value,
+  "A",        "bp1",    100,
+  "B",        "bp1",    140,
+  "B",        "bp2",    115,
+  "A",        "bp2",    120,
+  "A",        "bp3",    105
+)
+```
+
+```{r}
+df |>
+  pivot_wider(
+    names_from = measurement,
+    values_from = value
+  )
+```
+
+# Chapter 7 - Data important
+
+By default, read_csv() only recognizes empty strings ("") in this dataset as NAs, and we want it to also recognize the character string "N/A".
+
+Usually, read_csv() uses the first line of the data for the column names, which is a very common convention. But it’s not uncommon for a few lines of metadata to be included at the top of the file. You can use skip = n to skip the first n lines or use comment = "#" to drop all lines that start with (e.g.) #.
+
+```{r}
+students <- read_csv("https://pos.it/r4ds-students-csv", na = c("N/A", ""))
+students
+```
+
+```{r}
+students |>
+  rename(
+    student_id = `Student ID`,
+    full_name = `Full Name`
+  )
+```
+
+An alternative approach is to use: janitor::clean_names(). This will turn all column names into snake case.
+
+After reading the data one should consider variable types. For example, meal_plan is a categorical variable, which in R should be represented as a factor. The age column has both numeric and string values, with parse_number() you can convert string to int.
+
+```{r}
+students |>
+  janitor::clean_names() |>
+  mutate(
+    meal_plan = factor(meal_plan),
+    age = parse_number(if_else(age == "five", "5", age))
+  )
+```
+
+Here the function if_else() has three arguments. In this were saying that if age is the character "five", convert it to "5", if not leave it as age.
+
+## 7.2.4 Exercises
+
+*1. What function would you use to read a file where fields were seprated with "|"?*
+
+I would use the read_delim() because it will automatically guess the delimite if you dont specify it.
+
+I've used ChatGPT to generate some data that has "|" as a delimiter.
+#> Error in UseMethod("predict") : 
+#>   no applicable method for 'predict' applied to an object of class
+#>   "c('resample_results', 'tune_results', 'tbl_df', 'tbl', 'data.frame')"
+
+```{r}
+import_df <- "Name|Age|Gender|City|Salary
+John|28|Male|New York|75000
+Emily|22|Female|Los Angeles|60000
+Michael|31|Male|Chicago|80000
+Jessica|25|Female|Houston|65000
+William|29|Male|Miami|70000
+Sophia|27|Female|San Francisco|75000
+Daniel|24|Male|Seattle|72000
+Olivia|30|Female|Boston|78000
+James|26|Male|Dallas|67000
+Ava|23|Female|Atlanta|62000"
+
+df <- read_delim(import_df, delim = "|")
+
+df |>
+  gt()
+```
+
+
+*2. Apart from file, skip, and comment, what other arguments do read_csv() and read_tsv() have in common?*
+
+Arguments for read_csv and read_tsv is the same:
+
+    file,
+
+    col_names = TRUE,
+
+    col_types = NULL,
+
+    col_select = NULL,
+
+    id = NULL,
+
+    locale = default_locale(),
+
+    na = c("", "NA"),
+
+    quoted_na = TRUE,
+
+    quote = "\"",
+
+    comment = "",
+
+    trim_ws = TRUE,
+
+    skip = 0,
+
+    n_max = Inf,
+
+    guess_max = min(1000, n_max),
+
+    name_repair = "unique",
+
+    num_threads = readr_threads(),
+
+    progress = show_progress(),
+
+    show_col_types = should_show_types(),
+
+    skip_empty_rows = TRUE,
+
+    lazy = should_read_lazy()
+
+
+*3. What are the most important arguments to read_fwf()?*
+
+The fixed width files are very fast to parse because each field will be in exact sample place in each line. However, this means, we must know the exact width of each column. Hence, the most important argument to read_fwf() is the cols_position = , which can take the following values:
+
+    fwf_empty() - Guesses based on the positions of empty columns.
+
+    fwf_widths() - Supply the widths of the columns.
+
+    fwf_positions() - Supply paired vectors of start and end positions.
+
+    fwf_cols() - Supply named arguments of paired start and end positions or column widths.
+
+Also, another important argument is cols_types which will tell whether each column will be of which class - character, integer, factor etc.
+
+Here's an example:
+
+```{r}
+import_fwf_data <- "John    Smith   35  New York
+Alice   Johnson 28  Los Angeles
+Michael Williams 42  Chicago"
+
+df2 <- read_fwf(
+  import_fwf_data,
+  col_positions = fwf_widths(c(8, 8, 3, 12))
+)
+
+colnames(df2) <- c("Name", "Surname", "Age", "City")
+
+df2 |>
+  gt()
+```
+
+
+*4. Sometimes strings in a CSV file contain commas. To prevent them from causing problems, they need to be surrounded by a quoting character, like " or '. By default, read_csv() assumes that the quoting character will be ". To read the following text into a data frame, what argument to read_csv() do you need to specify?*
+
+To read the data abov into a data-frame, we will need to used the argument quote = "'" . Here’s an example in Table 2 .
+
+```{r}
+import_text <- "x,y\n1,'a,b'"
+
+read_csv(
+  I(import_text),
+  quote = "'",
+  col_names = FALSE
+)
+```
+
+*5. Identify what is wrong with each of the following inline CSV files. What happens when you run the code?*
+
+```{r}
+read_csv("a,b\n1,2,3\n4,5,6")
+```
+
+This data is not rectangular, there are only two columns in first row, but three in other two rows. Thus, R ends up reading only two columns by default and joins the second and third column values for the two observations.
+
+
+*6. Practice referring to non-syntactic names in the following data frame by:*
+
+    a. Extracting the variable called 1.
+    b. Plotting a scatterplot of 1 vs. 2.
+    c. Creating a new column called 3, which is 2 divided by 1.
+    d. Renaming the columns to one, two, and three.
+
+```{r}
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+
+annoying
+```
+
+
+```{r}
+# a. Extracting the variable called 1.
+annoying |>
+  pull(`1`)
+
+# b. Plotting a scatterplot of 1 vs. 2.
+ggplot(annoying, aes(x = `1`, y = `2`)) +
+  geom_point()
+
+# c. Creating a new column called 3, which is 2 divided by 1.
+annoying <- annoying |>
+  mutate(`3` = `2` / `1`)
+
+# d. Renaming the columns to one, two, and three.
+annoying |>
+  rename(
+    "one" = `1`,
+    "two" = `2`,
+    "three" = `3`
+  )
+```
+
+Reading data from multiple files - stack them on top of each other in a single data frame or vector.
+
+```{r}
+sales_files <- c(
+  "https://pos.it/r4ds-01-sales",
+  "https://pos.it/r4ds-02-sales",
+  "https://pos.it/r4ds-03-sales"
+)
+read_csv(sales_files, id = "file")
+```
+
+If you have many files you want to read in, it can get cumbersome to write out their names as a list. Instead, you can use the base list.files() function to find the files for you by matching a pattern in the file names.
+
+sales_files <- list.files("data", pattern = "sales\\.csv$", full.names = TRUE)

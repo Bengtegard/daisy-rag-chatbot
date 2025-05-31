@@ -1,0 +1,13 @@
+langchain
+langchain_community
+langchain_ollama
+langchain_groq
+langchain_huggingface
+transformers
+token_limit
+torch
+faiss_cpu
+langchain_text_splitters
+unstructured
+pypdf
+
